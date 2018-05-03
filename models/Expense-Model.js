@@ -21,13 +21,13 @@ const ExpenseSchema = new Schema({
     maxlength: 100
   },
   Amount: {
-    type: Number,
-    validate: {
-      validator: function(v) {
-        return /\d{4}.\d{2}/.test(v);
-      },
-      message: "{VALUE] Is Not A Valid Number!"
-    },
+    type: Schema.Types.Decimal128,
+    // validate: {
+    //   validator: function(v) {
+    //     return /\d{4}\.\d{2}/.test(v);
+    //   },
+    //   message: "{VALUE} Is Not A Valid Number!"
+    // },
     required: true
   },
   Description: {
