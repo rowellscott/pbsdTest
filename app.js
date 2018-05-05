@@ -5,6 +5,7 @@ var logger = require("morgan");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+var cors = require("cors");
 
 mongoose.connect("mongodb://localhost/pbsd-Test");
 
@@ -21,6 +22,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+app.use(
+  cors({
+    origin: ["http://localhost:4200"]
+  })
+);
 
 //======== Routes ===============
 var index = require("./routes/index");

@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const ExpenseSchema = new Schema({
   ProjectId: {
     type: Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: "Project"
   },
   Date: {
     type: Date,
@@ -22,12 +23,7 @@ const ExpenseSchema = new Schema({
   },
   Amount: {
     type: Schema.Types.Decimal128,
-    // validate: {
-    //   validator: function(v) {
-    //     return /\d{4}\.\d{2}/.test(v);
-    //   },
-    //   message: "{VALUE} Is Not A Valid Number!"
-    // },
+    min: 0,
     required: true
   },
   Description: {

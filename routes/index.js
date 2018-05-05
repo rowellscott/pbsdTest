@@ -23,10 +23,78 @@ function validateAmount(amount, res) {
 
 /* Get All Expenses for Listing Form */
 router.get("/", (req, res, next) => {
-  res.render("index", { title: "Hello World" });
+  Expense.find({})
+    .populate("ProjectId", "Name")
+    .sort({ Date: -1 })
+    .sort({ CustomerName: 1 })
+    .sort({ ProjectName: 1 })
+    .sort({ Amount: 1 })
+    .exec((err, expenses) => {
+      if (err) {
+        res.status(500).json({ message: "Error Retrieving Expenses" });
+      }
+
+      res.status(200).json(expenses);
+    });
 });
 
+//Get Expense Details Route
+router.get("/expense/:id", (req, res, next) => {
+  Expense.findById(req.params.id)
+    .populate("ProjectId", "Name")
+    .exec((err, expense) => {
+      if (err) {
+        console.log(err);
+        res.status(500).json({ message: "Expense Not Found" });
+        return;
+      }
+
+      res.status(200).json(expense);
+    });
+});
+
+//Get All Customers
+router.get("/customers", (req, res, next) => {
+  Customer.find({}, (err, customers) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json({ message: "Customers Not Found" });
+      return;
+    }
+
+    res.status(200).json(customers);
+  });
+});
+
+//Get All Projects For A Specific Customer
+router.get("/projects/:customerId", (req, res, next) => {
+  Project.find(
+    { CustomerId: req.params.customerId },
+    "Name",
+    (err, projects) => {
+      if (err) {
+        console.log(err);
+        res.status(500).json({ message: "Customers Not Found" });
+        return;
+      }
+
+      res.status(200).json(projects);
+    }
+  );
+});
+
+//Add An Expense
 router.post("/add", (req, res, next) => {
+  console.log(req.body);
+  if (req.body.newCustomerName === "") {
+    res.status(500).json({ message: "Please Select A Customer" });
+    return;
+  }
+  if (req.body.newProjectName === "") {
+    res.status(500).json({ message: "Please Select A Project" });
+    return;
+  } //
+
   Customer.findOne({ Name: req.body.newCustomerName }, (err, customer) => {
     // console.log(customer)
     if (err) {
@@ -85,23 +153,23 @@ router.put("/edit/:id", (req, res, next) => {
     return;
   }
 
-  Project.findOne({ Name: req.body.newProjectName }, "_id", (err, project) => {
-    if (err) {
+  Project.findOne({ Name: req.body.editProjectName }, "_id", (err, project) => {
+    if (err || project == null) {
       res
         .status(500)
         .json({ message: "Project Doesn't Exist for this Customer" });
       return;
     }
 
-    let newAmount = validateAmount(req.body.newAmount, res);
+    let editAmount = validateAmount(req.body.editAmount, res);
 
     const updates = {
-      Date: req.body.newDate,
-      CustomerName: req.body.newCustomerName,
+      Date: req.body.editDate,
+      CustomerName: req.body.editCustomerName,
       ProjectId: project._id,
-      Name: req.body.newName,
-      Amount: newAmount,
-      Description: req.body.newDescription
+      Name: req.body.editName,
+      Amount: editAmount,
+      Description: req.body.editDescription
     };
 
     Expense.findByIdAndUpdate(req.params.id, updates, err => {
@@ -113,6 +181,24 @@ router.put("/edit/:id", (req, res, next) => {
         message: "Update Successful!"
       });
     });
+  });
+});
+
+router.delete("/delete/:id", (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    res.status(400).json({ message: "Specified id is not valid." });
+    return;
+  }
+
+  Expense.findByIdAndRemove(req.params.id, err => {
+    if (err) {
+      res.json(err);
+      return;
+    }
+  });
+
+  res.json({
+    message: "Expense Removed From Database"
   });
 });
 

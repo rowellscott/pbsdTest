@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const ProjectSchema = new Schema({
   CustomerId: {
     type: Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: "Customer"
   },
   Name: {
     type: String,
