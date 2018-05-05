@@ -55,23 +55,24 @@ router.get("/expense/:id", (req, res, next) => {
 
 //Get All Customers
 router.get("/customers", (req, res, next) => {
-  Customer.find({}, (err, customers) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ message: "Customers Not Found" });
-      return;
-    }
+  Customer.find()
+    .sort({ Name: 1 })
+    .exec((err, customers) => {
+      if (err) {
+        console.log(err);
+        res.status(500).json({ message: "Customers Not Found" });
+        return;
+      }
 
-    res.status(200).json(customers);
-  });
+      res.status(200).json(customers);
+    });
 });
 
 //Get All Projects For A Specific Customer
 router.get("/projects/:customerId", (req, res, next) => {
-  Project.find(
-    { CustomerId: req.params.customerId },
-    "Name",
-    (err, projects) => {
+  Project.find({ CustomerId: req.params.customerId }, "Name")
+    .sort({ Name: 1 })
+    .exec((err, projects) => {
       if (err) {
         console.log(err);
         res.status(500).json({ message: "Customers Not Found" });
@@ -79,8 +80,7 @@ router.get("/projects/:customerId", (req, res, next) => {
       }
 
       res.status(200).json(projects);
-    }
-  );
+    });
 });
 
 //Add An Expense
@@ -121,14 +121,14 @@ router.post("/add", (req, res, next) => {
             return;
           }
 
-          let newAmount = validateAmount(req.body.newAmount, res);
+          // let newAmount = validateAmount(req.body.newAmount, res);
 
           const newExpense = new Expense({
             ProjectId: project._id,
             Date: req.body.newDate,
             CustomerName: req.body.newCustomerName,
             Name: req.body.newName,
-            Amount: newAmount,
+            Amount: req.body.newAmount.toFixed(2),
             Description: req.body.newDescription
           });
 

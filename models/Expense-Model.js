@@ -23,7 +23,8 @@ const ExpenseSchema = new Schema({
   },
   Amount: {
     type: Schema.Types.Decimal128,
-    min: 0,
+    min: 0.0,
+    max: 9999.99,
     required: true
   },
   Description: {
