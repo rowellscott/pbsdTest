@@ -1,25 +1,10 @@
 var express = require("express");
 const mongoose = require("mongoose");
 var router = express.Router();
-//hello
+
 const Customer = require("../models/Customer-Model");
 const Expense = require("../models/Expense-Model");
 const Project = require("../models/Project-Model");
-
-function validateAmount(amount, res) {
-  //Confirm Amount is a Number
-  let newAmount = Number(amount);
-
-  //Cast the Number to Two Decimal Places
-  let newAmountTwo = newAmount.toFixed(2);
-
-  //Validate Number Matches #,###.00 Format
-  if (newAmountTwo > 9999.99 || newAmountTwo < 0) {
-    res.status(500).json({ message: "Invalid Number" });
-    return;
-  }
-  return newAmountTwo;
-}
 
 /* Get All Expenses for Listing Form */
 router.get("/", (req, res, next) => {
@@ -95,6 +80,7 @@ router.post("/add", (req, res, next) => {
     return;
   } //
 
+  //Find Customer to Add Expense To
   Customer.findOne({ Name: req.body.newCustomerName }, (err, customer) => {
     // console.log(customer)
     if (err) {
@@ -103,13 +89,14 @@ router.post("/add", (req, res, next) => {
       return;
     }
 
+    //Find Project to Add Expense To
     Project.find({ CustomerId: customer._id }, (err, projects) => {
       if (err) {
         res.status(500).json({ message: "Customer Has No Projects" });
         return;
       }
 
-      //Find ProjectId of the Project That Adding Expense To
+      //Find ProjectId of Project to Add Expense To
       Project.findOne(
         { Name: req.body.newProjectName },
         "_id",
@@ -120,8 +107,6 @@ router.post("/add", (req, res, next) => {
               .json({ message: "Project Doesn't Exist for this Customer" });
             return;
           }
-
-          // let newAmount = validateAmount(req.body.newAmount, res);
 
           const newExpense = new Expense({
             ProjectId: project._id,
@@ -153,6 +138,7 @@ router.put("/edit/:id", (req, res, next) => {
     return;
   }
 
+  //Find Project With Expense to Update
   Project.findOne({ Name: req.body.editProjectName }, "_id", (err, project) => {
     if (err || project == null) {
       res
@@ -161,17 +147,19 @@ router.put("/edit/:id", (req, res, next) => {
       return;
     }
 
-    let editAmount = validateAmount(req.body.editAmount, res);
+    //Confirm Expense Amount is A Number
+    const editAmount = parseFloat(req.body.editAmount);
 
     const updates = {
       Date: req.body.editDate,
       CustomerName: req.body.editCustomerName,
       ProjectId: project._id,
       Name: req.body.editName,
-      Amount: editAmount,
+      Amount: editAmount.toFixed(2),
       Description: req.body.editDescription
     };
 
+    //Find Expense To Update
     Expense.findByIdAndUpdate(req.params.id, updates, err => {
       if (err) {
         res.status(500).json(err);
@@ -184,12 +172,14 @@ router.put("/edit/:id", (req, res, next) => {
   });
 });
 
+//Route To Delete An Expense
 router.delete("/delete/:id", (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     res.status(400).json({ message: "Specified id is not valid." });
     return;
   }
 
+  //Find Expense to Delete
   Expense.findByIdAndRemove(req.params.id, err => {
     if (err) {
       res.json(err);
