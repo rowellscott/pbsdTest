@@ -7,7 +7,7 @@ const Expense = require("../models/Expense-Model");
 const Project = require("../models/Project-Model");
 
 /* Get All Expenses for Listing Form */
-router.get("/", (req, res, next) => {
+router.get("/expenses", (req, res, next) => {
   Expense.find({})
     .populate("ProjectId", "Name")
     .sort({ Date: -1 })
