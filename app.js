@@ -6,8 +6,9 @@ var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 var cors = require("cors");
+require("dotenv").config();
 
-mongoose.connect("mongodb://localhost/pbsd-Test");
+mongoose.connect(process.env.MONGODB_URI);
 
 var app = express();
 
