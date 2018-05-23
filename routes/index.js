@@ -160,14 +160,18 @@ router.put("/edit/:id", (req, res, next) => {
     };
 
     //Find Expense To Update
-    Expense.findByIdAndUpdate(req.params.id, updates, err => {
+    Expense.findByIdAndUpdate(req.params.id, updates, (err, expense) => {
       if (err) {
         res.status(500).json(err);
       }
 
-      res.json({
-        message: "Update Successful!"
-      });
+      Expense.findById(req.params.id, (err, theExpense) => {
+          if (err) {
+            res.status(500).json(err);
+          }
+
+          res.status(200).json(theExpense);
+        });
     });
   });
 });
